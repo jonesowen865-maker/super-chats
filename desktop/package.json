@@ -1,0 +1,39 @@
+{
+  "name": "superchat-desktop",
+  "version": "1.0.0",
+  "description": "SuperChat Desktop App for streamers",
+  "author": "SuperChat",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win --publish never",
+    "dist": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win --publish never"
+  },
+  "dependencies": {
+    "electron-store": "^8.1.0"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "electron": "^29.1.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.superchat.app",
+    "productName": "SuperChat",
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "assets/icon.ico",
+      "sign": null,
+      "verifyUpdateCodeSignature": false
+    },
+    "files": [
+      "**/*",
+      "!node_modules/.bin"
+    ]
+  }
+}

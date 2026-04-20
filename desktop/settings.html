@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SuperChat</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #080810; --bg2: #0f0f1c; --bg3: #181828;
+      --yellow: #ffe135; --pink: #ff3d6b;
+      --border: rgba(255,255,255,0.07);
+      --text: #fff; --muted: rgba(255,255,255,0.4);
+      --green: #00e676;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      overflow: hidden;
+      gap: 12px;
+      -webkit-app-region: drag;
+      user-select: none;
+    }
+
+    * { -webkit-app-region: no-drag; }
+
+    /* ── Top bar ── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      -webkit-app-region: drag;
+    }
+
+    .logo { font-size: 20px; font-weight: 900; letter-spacing: 3px; color: var(--yellow); }
+    .logo span { color: var(--pink); }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 0 rgba(0,230,118,0.5);
+      animation: pulse 2s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(0,230,118,0.6); }
+      50%  { box-shadow: 0 0 0 5px rgba(0,230,118,0); }
+      100% { box-shadow: 0 0 0 0 rgba(0,230,118,0); }
+    }
+
+    /* ── User card ── */
+    .user-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 11px 13px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      flex-shrink: 0;
+    }
+
+    .avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--yellow), #ffb300);
+      color: #080810;
+      font-weight: 900;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .user-info { flex: 1; min-width: 0; }
+    .user-name { font-weight: 700; font-size: 14px; }
+    .user-sub  { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+    /* ── Send Link ── */
+    .label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      margin-bottom: 5px;
+    }
+
+    .link-box {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 11px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .link-box input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--yellow);
+      font-size: 11px;
+      font-family: monospace;
+      outline: none;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .copy-btn {
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-size: 11px;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .copy-btn:hover { color: var(--yellow); border-color: var(--yellow); }
+
+    /* ── Corner grid ── */
+    .corner-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .corner-btn {
+      padding: 8px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      background: var(--bg2);
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+    }
+    .corner-btn:hover { border-color: rgba(255,225,53,0.35); color: rgba(255,225,53,0.7); }
+    .corner-btn.active { border-color: var(--yellow); background: rgba(255,225,53,0.08); color: var(--yellow); }
+
+    /* ── Recent Superchats ── */
+    .recents {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .recents-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      padding-right: 2px;
+    }
+
+    .recents-list::-webkit-scrollbar { width: 3px; }
+    .recents-list::-webkit-scrollbar-track { background: transparent; }
+    .recents-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .sc-row {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      animation: fadeSlide 0.25s ease-out;
+    }
+
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .sc-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .sc-dot.blue   { background: #1976d2; }
+    .sc-dot.green  { background: #388e3c; }
+    .sc-dot.orange { background: #e65100; }
+    .sc-dot.pink   { background: #c62828; }
+    .sc-dot.purple { background: #7b1fa2; }
+    .sc-dot.gold   { background: #ffcc02; box-shadow: 0 0 5px rgba(255,204,2,0.6); }
+
+    .sc-info { flex: 1; min-width: 0; }
+    .sc-name { font-size: 12px; font-weight: 700; }
+    .sc-msg  { font-size: 11px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .sc-amt {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--yellow);
+      flex-shrink: 0;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 14px 0;
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+    }
+
+    /* ── Bottom buttons ── */
+    .btn-row { display: flex; gap: 7px; flex-shrink: 0; }
+
+    .btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 999px;
+      border: none;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.15s;
+    }
+    .btn:hover { opacity: 0.85; transform: translateY(-1px); }
+
+    .btn-yellow { background: linear-gradient(135deg, var(--yellow), #ffb300); color: #080810; }
+    .btn-ghost  { background: var(--bg2); border: 1.5px solid var(--border); color: var(--muted); flex: 0.55; }
+    .btn-ghost:hover { border-color: var(--pink); color: var(--pink); }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 12px; left: 50%;
+      transform: translateX(-50%) translateY(50px);
+      background: var(--yellow);
+      color: #080810;
+      font-weight: 800;
+      font-size: 12px;
+      padding: 6px 16px;
+      border-radius: 999px;
+      transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+      pointer-events: none;
+      z-index: 99;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="logo">SUPER<span>CHAT</span></div>
+    <div class="status"><div class="dot"></div>Live</div>
+  </div>
+
+  <div class="user-card">
+    <div class="avatar" id="avatar">?</div>
+    <div class="user-info">
+      <div class="user-name" id="userName">Loading…</div>
+      <div class="user-sub">Alerts active — checking every 2.5s</div>
+    </div>
+  </div>
+
+  <div>
+    <div class="label">Your Send Link</div>
+    <div class="link-box">
+      <input type="text" id="sendLink" readonly>
+      <button class="copy-btn" onclick="copyLink()">Copy</button>
+    </div>
+  </div>
+
+  <div>
+    <div class="label">Popup Corner</div>
+    <div class="corner-grid">
+      <button class="corner-btn" data-corner="top-left"     onclick="setCorner(this)">↖ Top Left</button>
+      <button class="corner-btn" data-corner="top-right"    onclick="setCorner(this)">Top Right ↗</button>
+      <button class="corner-btn" data-corner="bottom-left"  onclick="setCorner(this)">↙ Bottom Left</button>
+      <button class="corner-btn" data-corner="bottom-right" onclick="setCorner(this)">Bottom Right ↘</button>
+    </div>
+  </div>
+
+  <div class="recents">
+    <div class="label">Recent Superchats</div>
+    <div class="recents-list" id="recentsList">
+      <div class="empty-state">No superchats yet</div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-yellow" onclick="testAlert()">⚡ Test Alert</button>
+    <button class="btn btn-ghost"  onclick="minimize()">Hide to Tray</button>
+    <button class="btn btn-ghost"  style="flex:0.35;font-size:15px" onclick="logout()" title="Log out">⏏</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+  let session = null;
+  let settings = { corner: 'top-right' };
+
+  function colorForAmount(amt) {
+    const n = parseFloat(amt);
+    if (isNaN(n) || n < 1) return 'blue';
+    if (n >= 10000) return 'gold';
+    if (n >= 100)   return 'purple';
+    if (n >= 50)    return 'pink';
+    if (n >= 20)    return 'orange';
+    if (n >= 5)     return 'green';
+    return 'blue';
+  }
+
+  function renderRecentSuperchats(list) {
+    const el = document.getElementById('recentsList');
+    if (!list || list.length === 0) {
+      el.innerHTML = '<div class="empty-state">No superchats yet</div>';
+      return;
+    }
+    el.innerHTML = list.map(sc => {
+      const color = sc.color || colorForAmount(sc.amount);
+      const amt = parseFloat(sc.amount || 0).toFixed(2);
+      const msg = sc.message || '';
+      const name = sc.sender_name || 'Viewer';
+      return `
+        <div class="sc-row">
+          <div class="sc-dot ${color}"></div>
+          <div class="sc-info">
+            <div class="sc-name">${esc(name)}</div>
+            <div class="sc-msg">${esc(msg) || '<em>no message</em>'}</div>
+          </div>
+          <div class="sc-amt">$${amt}</div>
+        </div>`;
+    }).join('');
+  }
+
+  function esc(str) {
+    return String(str)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+
+  async function init() {
+    session  = await window.api.getSession();
+    settings = await window.api.getSettings();
+    if (!session) { window.location.href = 'login.html'; return; }
+
+    document.getElementById('userName').textContent = session.username;
+    document.getElementById('avatar').textContent   = session.username.charAt(0).toUpperCase();
+
+    const serverUrl = await window.api.getServerUrl();
+    document.getElementById('sendLink').value =
+      `${serverUrl}/send?to=${encodeURIComponent(session.username)}`;
+
+    setActiveCorner(settings.corner || 'top-right');
+
+    // Load recent superchats
+    try {
+      const recents = await window.api.getRecentSuperchats();
+      renderRecentSuperchats(recents);
+    } catch {}
+  }
+
+  function setActiveCorner(corner) {
+    document.querySelectorAll('.corner-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.corner === corner)
+    );
+  }
+
+  function setCorner(btn) {
+    settings.corner = btn.dataset.corner;
+    setActiveCorner(settings.corner);
+    window.api.saveSettings({ corner: settings.corner });
+    toast('Corner saved!');
+  }
+
+  function copyLink() {
+    const val = document.getElementById('sendLink').value;
+    navigator.clipboard.writeText(val)
+      .then(() => toast('Link copied!'))
+      .catch(() => { document.getElementById('sendLink').select(); document.execCommand('copy'); toast('Copied!'); });
+  }
+
+  async function testAlert() {
+    await window.api.sendTestOverlay();
+    toast('Test alert sent!');
+  }
+
+  async function minimize() { await window.api.minimize(); }
+
+  async function logout() {
+    if (confirm('Log out and stop receiving alerts?')) await window.api.logout();
+  }
+
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2200);
+  }
+
+  init();
+</script>
+</body>
+</html>

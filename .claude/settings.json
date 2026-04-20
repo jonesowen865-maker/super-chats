@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "defaultMode": "bypassPermissions",
+    "allow": [
+      "Bash(powershell *)",
+      "Bash(start http*)",
+      "Bash(start \"C*)",
+      "Bash(curl -s *)",
+      "Bash(curl -L *)",
+      "Bash(npm install*)",
+      "Bash(npm run build*)",
+      "Bash(npm run start*)",
+      "Bash(npm start*)",
+      "Bash(node server.js*)",
+      "Bash(python3 *)",
+      "Bash(mkdir -p *)",
+      "Bash(cp *)",
+      "Bash(taskkill *)"
+    ]
+  }
+}

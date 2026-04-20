@@ -53,7 +53,7 @@ function apiRequest(method, urlPath, body, token) {
       });
     });
 
-    req.setTimeout(5000, () => { req.destroy(); reject(new Error('Timeout')); });
+    req.setTimeout(60000, () => { req.destroy(); reject(new Error('Server took too long to respond. It may be waking up — try again in a moment.')); });
     req.on('error', reject);
     if (data) req.write(data);
     req.end();

@@ -282,6 +282,11 @@
     }
   }
 
+  // Pre-fill the server URL field with whatever is currently saved
+  window.api.getServerUrl().then(url => {
+    document.getElementById('serverUrl').value = url || '';
+  });
+
   document.addEventListener('keydown', e => {
     if (e.key !== 'Enter') return;
     if (document.getElementById('loginForm').style.display !== 'none') doLogin();

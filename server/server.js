@@ -7,8 +7,7 @@ const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DB_PATH = process.env.DB_PATH ||
-  (process.env.NODE_ENV === 'production' ? '/data/superchats.db' : path.join(__dirname, 'superchats.db'));
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'superchats.db');
 
 let db;
 
